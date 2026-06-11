@@ -3,7 +3,7 @@ const {
   handleGenerateNewShortUrl,
   handleRedirectToOriginalUrl,
   handleGetUrlStats,
-  handleDeleteByShortId
+  handleDeleteByShortId,
 } = require("../controllers/url");
 const router = express.Router();
 
@@ -13,5 +13,4 @@ router
   .get("/:shortId/stats", handleGetUrlStats)
   .delete("/:shortId", handleDeleteByShortId);
 
-  
 module.exports = router;

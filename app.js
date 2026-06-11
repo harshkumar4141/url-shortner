@@ -1,26 +1,24 @@
+require("dotenv").config();
+
 const express = require("express");
 const { connectToDB } = require("./connection");
-const cookieParser = require('cookie-parser')
-const {restrictToLoggedInUserOnly, checkAuth} = require('./middlewares/auth')
-
-const app = express();
-const PORT = 8001;
-
-const mongoose = require("mongoose");
-const User = require("./models/user")
-const Url = require("./models/url");
+const cookieParser = require("cookie-parser");
+const { checkForAuthentication, restrictTo } = require("./middlewares/auth");
 const path = require("path");
 
-const urlRoutes = require("./routes/url");
-const userRoutes = require('./routes/user')
-const staticRoute = require("./routes/staticRoute");
+const app = express();
+const PORT = process.env.PORT ;
 
+const urlRoutes = require("./routes/url");
+const userRoutes = require("./routes/user");
+const staticRoute = require("./routes/staticRoute");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser())
+app.use(cookieParser());
+app.use(checkForAuthentication);
 
-connectToDB("mongodb://localhost:27017/url-shortener")
+connectToDB(process.env.MONGODB_URI)
   .then(() => {
     console.log("Connected to DB");
   })
@@ -28,9 +26,9 @@ connectToDB("mongodb://localhost:27017/url-shortener")
     console.log("Error connecting to DB", err);
   });
 
-app.use("/url",restrictToLoggedInUserOnly, urlRoutes);
+app.use("/url", restrictTo(["NORMAL", "ADMIN"]), urlRoutes);
 app.use("/", staticRoute);
-app.use('/user',checkAuth, userRoutes)
+app.use("/user", userRoutes);
 
 app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
