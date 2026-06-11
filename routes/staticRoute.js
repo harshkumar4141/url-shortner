@@ -11,10 +11,15 @@ route.get("/admin/urls", restrictTo(["ADMIN"]), async (req, res) => {
   });
 });
 
-route.get("/", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
+route.get("/", async (req, res) => {
+  if (!req.user) {
+    return res.redirect("/signup");
+  }
+
   const urls = await URL.find({ createdBy: req.user._id });
+
   return res.render("home", {
-    urls: urls,
+    urls,
   });
 });
 
